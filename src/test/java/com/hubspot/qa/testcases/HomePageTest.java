@@ -4,7 +4,9 @@ import com.hubspot.qa.base.TestBase;
 import com.hubspot.qa.pages.*;
 
 import com.hubspot.qa.util.CreateContactInfo;
+import com.hubspot.qa.util.Login;
 import com.hubspot.qa.util.TestUtil;
+import org.apache.log4j.lf5.viewer.LogFactor5InputDialog;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
@@ -16,37 +18,33 @@ public class HomePageTest extends TestBase {
     LoginPageHubSpot loginPageHubSpot;
     HomePageHubSpot homePageHubSpot;
     ContactsPageHubSpot contactsPageHubSpot;
-    CreateContactInfo contact; //Class used to create a user
+    //Class used to create a user
     ContactInfoPageHubSpot contactInfoPageHubSpot; //POM for the new user created
+    Login login;
 
 
     public HomePageTest() {
         super();
+
     }
 
     @BeforeMethod
-    public void setUp() throws InterruptedException {
+    public void setUp() throws Exception {
         initialization();
-        //Initializing all the instances of the classes declared above
-        mainPage = new MainPage();
-        loginPageHubSpot = new LoginPageHubSpot();
-        homePageHubSpot = new HomePageHubSpot();
-        contactsPageHubSpot = new ContactsPageHubSpot();
-        contact = new CreateContactInfo();
-        contactInfoPageHubSpot = new ContactInfoPageHubSpot();
-
-
-        //Login into the website.
-        loginPageHubSpot = mainPage.clickLoginBtn();
-        homePageHubSpot = loginPageHubSpot.login(prop.getProperty("username"), prop.getProperty("password"));
+        login = new Login();
+        homePageHubSpot = login.logInAs("admin");
 
     }
 
     @Test(priority = 1)
-    public void createNewUser() {
+    public void createNewUser() throws InterruptedException {
+        CreateContactInfo contact = new CreateContactInfo(); // Instantiating a new class to create a random contact
+        contactInfoPageHubSpot = new ContactInfoPageHubSpot();
         contactsPageHubSpot = homePageHubSpot.clickContactsOption();
         contactsPageHubSpot.createContact(contact);
-        Assert.assertEquals(contactInfoPageHubSpot.verifyHomePageTitle(), contact.getFirstName() + ' ' + contact.getLastName());
+        System.out.println(contactInfoPageHubSpot.getContactsPageTitle());
+        System.out.println(contact.getFirstName() + ' ' + contact.getLastName());
+        Assert.assertEquals(contactInfoPageHubSpot.getContactsPageTitle(), contact.getFirstName() + ' ' + contact.getLastName());
     }
 
     //Data driven test case
@@ -61,15 +59,16 @@ public class HomePageTest extends TestBase {
     }
 
 
-    @Test(priority = 1, dataProvider = "getDataFromExcel")
+    @Test(priority = 2, dataProvider = "getDataFromExcel")
     public void createUsersUsingExcelFile(String email, String firstName, String lastName, String jobTitle, String phoneNumber) throws InterruptedException {
         contactsPageHubSpot = homePageHubSpot.clickContactsOption();
         contactsPageHubSpot.createContactWithData(email, firstName, lastName, jobTitle, phoneNumber);
-        Assert.assertEquals(contactInfoPageHubSpot.verifyHomePageTitle(), firstName + ' ' + lastName);
+        Assert.assertEquals(contactInfoPageHubSpot.getContactsPageTitle(), firstName + ' ' + lastName);
+
 
     }
 
-  //  @AfterMethod
+    //  @AfterMethod
     public void tearDown() {
         driver.quit();
     }

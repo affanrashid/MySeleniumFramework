@@ -9,7 +9,7 @@ public class ContactInfoPageHubSpot extends TestBase {
         PageFactory.initElements(driver, this);
     }
 
-    public String verifyHomePageTitle(){
+    public String getContactsPageTitle(){
         return driver.getTitle();
     }
 }
